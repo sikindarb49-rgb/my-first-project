@@ -1,0 +1,388 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta name="description" content="Advanced single-file responsive HTML demo: accessible, performance-minded, dark-mode, animations, components (hero, features, gallery, modal, form), progressive enhancement." />
+  <title>Advanced HTML Demo — Single File</title>
+
+  <!-- Basic favicons (data URI) -->
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='0.9em' font-size='80'%3E🚀%3C/text%3E%3C/svg%3E">
+
+  <style>
+    :root{
+      --bg: #0f172a; /* dark blue */
+      --card: #0b1220;
+      --muted: #9aa4bf;
+      --accent: #7c3aed;
+      --glass: rgba(255,255,255,0.04);
+      --glass-2: rgba(255,255,255,0.02);
+      --radius: 14px;
+      color-scheme: dark;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, 'Helvetica Neue', Arial;
+    }
+
+    /* Light theme variables (will be toggled with .light on <html>) */
+    html.light{ --bg: #f6f8fb; --card: #ffffff; --muted: #55607a; --accent: #6d28d9; --glass: rgba(0,0,0,0.03); --glass-2: rgba(0,0,0,0.02); color-scheme: light; }
+
+    *{box-sizing:border-box}
+    html,body{height:100%;margin:0;background:linear-gradient(180deg,var(--bg),#071023);color:#e6eef8}
+    a{color:var(--accent);text-decoration:none}
+
+    .container{max-width:1100px;margin:48px auto;padding:24px}
+
+    /* Header */
+    header{display:flex;align-items:center;justify-content:space-between;gap:12px}
+    .brand{display:flex;align-items:center;gap:12px}
+    .logo{width:48px;height:48px;border-radius:10px;background:linear-gradient(135deg,var(--accent),#06b6d4);display:grid;place-items:center;font-weight:700;box-shadow:0 6px 18px rgba(12,13,20,0.6)}
+    h1{font-size:20px;margin:0}
+    p.lead{margin:0;color:var(--muted);font-size:13px}
+
+    nav{display:flex;gap:10px;align-items:center}
+    .btn{background:var(--glass);padding:8px 12px;border-radius:10px;border:1px solid rgba(255,255,255,0.03);cursor:pointer}
+    .btn:focus{outline:3px solid rgba(124,58,237,0.2)}
+
+    /* Hero */
+    .hero{display:grid;grid-template-columns:1fr 360px;gap:28px;margin-top:28px;align-items:center}
+    .card{background:linear-gradient(180deg,var(--card),rgba(255,255,255,0.02));padding:22px;border-radius:var(--radius);backdrop-filter: blur(6px);border:1px solid var(--glass-2)}
+    .hero h2{margin:0 0 8px 0;font-size:28px}
+    .hero p{margin:0;color:var(--muted)}
+
+    /* Feature grid */
+    .features{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:20px}
+    .feature{padding:16px;border-radius:12px;background:linear-gradient(180deg, rgba(255,255,255,0.02), transparent);min-height:120px}
+    .feature h3{margin:0 0 8px 0;font-size:16px}
+    .feature p{margin:0;color:var(--muted);font-size:13px}
+
+    /* Gallery */
+    .gallery{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:20px}
+    .gallery img{width:100%;height:140px;object-fit:cover;border-radius:10px;display:block}
+
+    /* Contact form */
+    form{display:grid;gap:10px}
+    label{font-size:13px;color:var(--muted)}
+    input,textarea,select{background:transparent;border:1px solid rgba(255,255,255,0.06);padding:10px;border-radius:8px;color:inherit}
+    .row{display:flex;gap:10px}
+
+    footer{margin-top:28px;color:var(--muted);font-size:13px}
+
+    /* Modal */
+    .modal-backdrop{position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:linear-gradient(0deg, rgba(2,6,23,0.6), rgba(2,6,23,0.6));z-index:60}
+    .modal{background:var(--card);padding:18px;border-radius:12px;max-width:720px;width:94%;color:inherit}
+
+    /* responsive */
+    @media (max-width:900px){
+      .hero{grid-template-columns:1fr;}
+      .gallery{grid-template-columns:repeat(2,1fr)}
+      .features{grid-template-columns:repeat(2,1fr)}
+    }
+    @media (max-width:520px){
+      .gallery img{height:110px}
+      .features{grid-template-columns:1fr}
+    }
+
+    /* subtle micro-interactions */
+    .card:hover{transform:translateY(-6px);transition:transform 280ms cubic-bezier(.2,.9,.2,1)}
+    .feature:active{transform:scale(.996)}
+
+    /* accessible focus ring for keyboard users */
+    :focus{outline:none}
+    :focus-visible{outline:3px solid rgba(124,58,237,0.2);outline-offset:2px}
+
+    /* utility */
+    .muted{color:var(--muted)}
+    .kbd{background:var(--glass);padding:6px 8px;border-radius:6px;font-size:12px}
+
+    /* small animations */
+    .fade-in{opacity:0;transform:translateY(8px);animation:fadeIn 700ms forwards}
+    @keyframes fadeIn{to{opacity:1;transform:none}}
+
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <div class="brand">
+        <div class="logo" aria-hidden>AZ</div>
+        <div>
+          <h1>Advanced Web Demo</h1>
+          <p class="lead">Single-file, responsive, accessible, and interactive demo</p>
+        </div>
+      </div>
+
+      <nav>
+        <button class="btn" id="openModalBtn" aria-haspopup="dialog">Preview features</button>
+        <button class="btn" id="themeToggle" aria-pressed="false" title="Toggle light / dark">Toggle theme</button>
+        <a class="btn" href="#contact">Contact</a>
+      </nav>
+    </header>
+
+    <main>
+      <section class="hero">
+        <div class="card fade-in" aria-labelledby="hero-title">
+          <h2 id="hero-title">Beautiful, performant, and pragmatic UI</h2>
+          <p>Includes layout patterns, accessible components, a small gallery, a modal, and a progressive contact form. Try toggling theme, opening the modal, or validating the form.</p>
+
+          <div style="margin-top:14px;display:flex;gap:10px">
+            <button class="btn" id="scrollToGallery">Open gallery</button>
+            <button class="btn" id="openContact">Contact us</button>
+            <span class="kbd">Ctrl + K</span>
+          </div>
+
+          <div style="margin-top:16px;font-size:13px;color:var(--muted)">Keyboard: press <strong>Ctrl + K</strong> to focus search (demo)</div>
+        </div>
+
+        <aside>
+          <div class="card fade-in" style="display:flex;flex-direction:column;gap:12px">
+            <h3 style="margin:0">Snapshot</h3>
+            <p class="muted" style="margin:0;">Built with semantic HTML, CSS Grid/Flex, progressive enhancement, and accessible patterns.</p>
+
+            <dl style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px">
+              <div><strong>Performance</strong><div class="muted">Optimized</div></div>
+              <div><strong>Accessibility</strong><div class="muted">WCAG-minded</div></div>
+              <div><strong>Dark / Light</strong><div class="muted">Toggleable</div></div>
+              <div><strong>JS</strong><div class="muted">Enhances UX</div></div>
+            </dl>
+
+            <div style="display:flex;gap:8px;margin-top:8px">
+              <button class="btn" id="downloadHTML">Download</button>
+              <button class="btn" id="viewSource">View source</button>
+            </div>
+          </div>
+        </aside>
+      </section>
+
+      <section style="margin-top:18px">
+        <h2 style="margin-bottom:8px">Key features</h2>
+        <div class="features">
+          <article class="feature" tabindex="0">
+            <h3>Responsive layout</h3>
+            <p>Combines CSS Grid and Flexbox to adapt from mobile to large screens.</p>
+          </article>
+
+          <article class="feature" tabindex="0">
+            <h3>Theme toggle</h3>
+            <p>Switch between light and dark themes; stored in localStorage for persistence.</p>
+          </article>
+
+          <article class="feature" tabindex="0">
+            <h3>Accessible modal</h3>
+            <p>Focus is trapped inside modal while open. Screen-reader friendly markup.</p>
+          </article>
+
+          <article class="feature" tabindex="0">
+            <h3>Progressive form</h3>
+            <p>Client-side validation with graceful fallback to server behavior (if any).</p>
+          </article>
+
+          <article class="feature" tabindex="0">
+            <h3>Gallery with lazy images</h3>
+            <p>Images use <code>loading="lazy"</code> and descriptive alt text.</p>
+          </article>
+
+          <article class="feature" tabindex="0">
+            <h3>Small JS footprint</h3>
+            <p>Vanilla JS only — no external frameworks required.</p>
+          </article>
+        </div>
+      </section>
+
+      <section id="gallerySection" style="margin-top:20px">
+        <h2>Gallery</h2>
+        <div class="gallery card">
+          <!-- Using placeholder gradient images (SVG data URIs) to keep single-file and fast -->
+          <img loading="lazy" alt="Aurora-like abstract gradient" src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='800' height='600'><rect width='100%' height='100%' fill='url(%23g1)' /><defs><linearGradient id='g1' x1='0' x2='1'><stop offset='0' stop-color='%237c3aed'/><stop offset='1' stop-color='%2306b6d4'/></linearGradient></defs></svg>">
+          <img loading="lazy" alt="Soft purple to blue gradient" src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='800' height='600'><rect width='100%' height='100%' fill='url(%23g2)' /><defs><linearGradient id='g2' x1='0' x2='1'><stop offset='0' stop-color='%230d9488'/><stop offset='1' stop-color='%233b82f6'/></linearGradient></defs></svg>">
+          <img loading="lazy" alt="Green to teal gradient" src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='800' height='600'><rect width='100%' height='100%' fill='url(%23g3)' /><defs><linearGradient id='g3' x1='0' x2='1'><stop offset='0' stop-color='%230ea5a4'/><stop offset='1' stop-color='%234f46e5'/></linearGradient></defs></svg>">
+          <img loading="lazy" alt="Sunset orange gradient" src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='800' height='600'><rect width='100%' height='100%' fill='url(%23g4)' /><defs><linearGradient id='g4' x1='0' x2='1'><stop offset='0' stop-color='%23fb923c'/><stop offset='1' stop-color='%23ef4444'/></linearGradient></defs></svg>">
+        </div>
+      </section>
+
+      <section id="contact" style="margin-top:20px">
+        <h2>Contact</h2>
+        <div class="card" style="padding:18px">
+          <form id="contactForm" novalidate>
+            <div class="row">
+              <div style="flex:1">
+                <label for="name">Name</label>
+                <input id="name" name="name" type="text" required minlength="2" placeholder="Your name" />
+              </div>
+              <div style="flex:1">
+                <label for="email">Email</label>
+                <input id="email" name="email" type="email" required placeholder="you@example.com" />
+              </div>
+            </div>
+
+            <div>
+              <label for="subject">Subject</label>
+              <select id="subject" name="subject">
+                <option>General question</option>
+                <option>Collaboration</option>
+                <option>Bug report</option>
+                <option>Other</option>
+              </select>
+            </div>
+
+            <div>
+              <label for="message">Message</label>
+              <textarea id="message" name="message" rows="5" placeholder="Write your message..." required></textarea>
+            </div>
+
+            <div style="display:flex;gap:8px;align-items:center;margin-top:8px">
+              <button class="btn" type="submit">Send message</button>
+              <div id="formFeedback" aria-live="polite" class="muted">We will not send anything — demo only.</div>
+            </div>
+          </form>
+        </div>
+      </section>
+
+    </main>
+
+    <footer>
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap">
+        <div>© <span id="year"></span> Advanced Web Demo</div>
+        <div class="muted">Built with ♥ — single-file demo</div>
+      </div>
+    </footer>
+  </div>
+
+  <!-- Modal markup -->
+  <div class="modal-backdrop" id="modal" role="dialog" aria-modal="true" aria-hidden="true">
+    <div class="modal" role="document" aria-labelledby="modalTitle">
+      <h3 id="modalTitle">Feature preview</h3>
+      <p class="muted">This modal demonstrates focus management and a11y-friendly behavior. Close with <kbd>Esc</kbd>.</p>
+      <ul>
+        <li>Keyboard focus is trapped while open.</li>
+        <li>Background content is inert to assistive tech.</li>
+        <li>Easy to extend for real content.</li>
+      </ul>
+      <div style="display:flex;gap:8px;margin-top:10px;justify-content:flex-end">
+        <button class="btn" id="closeModal">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Small helper functions
+    const $ = (s, el=document) => el.querySelector(s);
+    const $$ = (s, el=document) => Array.from(el.querySelectorAll(s));
+
+    // Year
+    document.getElementById('year').textContent = new Date().getFullYear();
+
+    // Theme toggle with persistence
+    const themeToggle = $('#themeToggle');
+    const root = document.documentElement;
+    const stored = localStorage.getItem('aw_theme');
+    if(stored === 'light') root.classList.add('light');
+    themeToggle.addEventListener('click', ()=>{
+      const light = root.classList.toggle('light');
+      themeToggle.setAttribute('aria-pressed', light);
+      localStorage.setItem('aw_theme', light ? 'light' : 'dark');
+    });
+
+    // Modal (accessible)
+    const modal = $('#modal');
+    const openModalBtn = $('#openModalBtn');
+    const closeModalBtn = $('#closeModal');
+    let lastFocused = null;
+
+    function trapFocus(container){
+      const focusable = 'a[href], button, textarea, input, select, [tabindex]:not([tabindex="-1"])';
+      const nodes = Array.from(container.querySelectorAll(focusable)).filter(n => !n.hasAttribute('disabled'));
+      const first = nodes[0], last = nodes[nodes.length-1];
+      function handle(e){
+        if(e.key === 'Tab'){
+          if(e.shiftKey && document.activeElement === first){ e.preventDefault(); last.focus(); }
+          else if(!e.shiftKey && document.activeElement === last){ e.preventDefault(); first.focus(); }
+        }
+        if(e.key === 'Escape') closeModal();
+      }
+      container._trap = handle;
+      document.addEventListener('keydown', handle);
+      return ()=> document.removeEventListener('keydown', handle);
+    }
+
+    function openModal(){
+      lastFocused = document.activeElement;
+      modal.style.display = 'flex';
+      modal.setAttribute('aria-hidden','false');
+      // mark other content inert for a11y
+      document.querySelectorAll('main, header, footer').forEach(n=>n.setAttribute('aria-hidden','true'));
+      // focus first focusable element
+      const cleanup = trapFocus(modal);
+      modal._cleanup = cleanup;
+      const focusable = modal.querySelector('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])');
+      (focusable || closeModalBtn).focus();
+    }
+    function closeModal(){
+      if(modal._cleanup) modal._cleanup();
+      modal.style.display='none';
+      modal.setAttribute('aria-hidden','true');
+      document.querySelectorAll('main, header, footer').forEach(n=>n.removeAttribute('aria-hidden'));
+      if(lastFocused) lastFocused.focus();
+    }
+
+    openModalBtn.addEventListener('click', openModal);
+    closeModalBtn.addEventListener('click', closeModal);
+    modal.addEventListener('click', (e)=>{ if(e.target === modal) closeModal(); });
+
+    // Keyboard shortcut: Ctrl+K to focus subject select
+    document.addEventListener('keydown', (e)=>{
+      if(e.ctrlKey && e.key.toLowerCase() === 'k'){
+        e.preventDefault(); $('#subject').focus();
+      }
+    });
+
+    // Basic form handling with client-side validation
+    const form = $('#contactForm');
+    const feedback = $('#formFeedback');
+    form.addEventListener('submit', (e)=>{
+      e.preventDefault();
+      const data = new FormData(form);
+      const obj = Object.fromEntries(data.entries());
+
+      // simple validation example
+      if(!obj.name || obj.name.length < 2){ feedback.textContent = 'Please enter a valid name (2+ chars)'; return; }
+      if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(obj.email)){ feedback.textContent = 'Please enter a valid email'; return; }
+      if(!obj.message || obj.message.length < 10){ feedback.textContent = 'Message should be at least 10 characters'; return; }
+
+      // Simulate async send
+      feedback.textContent = 'Sending…';
+      setTimeout(()=>{
+        feedback.textContent = 'Thanks — your message is received (demo)';
+        form.reset();
+      }, 700);
+    });
+
+    // Scroll to gallery
+    $('#scrollToGallery').addEventListener('click', ()=>{
+      document.getElementById('gallerySection').scrollIntoView({behavior:'smooth'});
+    });
+
+    // Open contact
+    $('#openContact').addEventListener('click', ()=>{ document.getElementById('contact').scrollIntoView({behavior:'smooth'}); $('#name').focus(); });
+
+    // Download: create a blob of current document and trigger download
+    $('#downloadHTML').addEventListener('click', ()=>{
+      const blob = new Blob([document.documentElement.outerHTML], {type:'text/html'});
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url; a.download = 'advanced-webpage.html';
+      document.body.appendChild(a); a.click(); a.remove();
+      URL.revokeObjectURL(url);
+    });
+
+    $('#viewSource').addEventListener('click', ()=>{
+      const source = new Blob([document.documentElement.outerHTML],{type:'text/plain'});
+      const url = URL.createObjectURL(source);
+      window.open(url, '_blank');
+      URL.revokeObjectURL(url);
+    });
+
+    // small accessibility: hide modal from AT if closed
+    modal.style.display = 'none';
+
+  </script>
+</body>
+</html>
